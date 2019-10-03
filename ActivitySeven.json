@@ -1,0 +1,70 @@
+#Kevin Ducat
+#Activity 7
+# Problem A
+#
+text_file = sc.textFile("wap.txt");
+counts = text_file.flatMap(lambda line: line.split(" ")).map(lambda word: (word.lower(), 1)).reduceByKey(lambda a, b: a + b);
+counts5 = counts.filter(lambda x: x[1]== 5);
+counts6 = counts.filter(lambda x: x[1]== 6);
+counts7 = counts.filter(lambda x: x[1]== 7);
+allcounts = sc.union([counts5, counts6, counts7]);
+#--enter the following line as individual command.
+mylist = allcounts.collect();
+#--enter the following line as individual command.
+#--elipse shows up, but will have to hit enter to force the words to print 
+for elem in mylist: print elem[0];
+#
+#Activity B
+#
+from pyspark.sql.functions import *;
+text_file = sc.textFile("wap.txt");
+counts = text_file.flatMap(lambda line: line.split(" ")).map(lambda word: (word.lower(), 1)).reduceByKey(lambda a, b: a + b);
+wordcounts = counts.toDF();
+newDf1 = wordcounts.withColumn('_1', regexp_replace('_1', 'b', '')) ;                                                                             
+newDf2 = newDf1.withColumn('_1', regexp_replace('_1', 'c', ''))      ;                                                                        
+newDf3 = newDf2.withColumn('_1', regexp_replace('_1', 'd', ''))       ;                                                                       
+newDf4 = newDf3.withColumn('_1', regexp_replace('_1', 'f', ''))        ;                                                                      
+newDf5 = newDf4.withColumn('_1', regexp_replace('_1', 'g', ''))         ;                                                                     
+newDf6 = newDf5.withColumn('_1', regexp_replace('_1', 'h', ''))          ;                                                                    
+newDf7 = newDf6.withColumn('_1', regexp_replace('_1', 'j', ''))           ;                                                                   
+newDf8 = newDf7.withColumn('_1', regexp_replace('_1', 'k', ''))            ;                                                                  
+newDf9 = newDf8.withColumn('_1', regexp_replace('_1', 'l', ''))             ;                                                                 
+newDf10 = newDf9.withColumn('_1', regexp_replace('_1', 'm', ''))             ;                                                                 
+newDf11 = newDf10.withColumn('_1', regexp_replace('_1', 'n', ''))             ;                                                                 
+newDf12 = newDf11.withColumn('_1', regexp_replace('_1', 'p', '')) ;                                                                             
+newDf13 = newDf12.withColumn('_1', regexp_replace('_1', 'q', ''))  ;                                                                            
+newDf14 = newDf13.withColumn('_1', regexp_replace('_1', 'r', ''))   ;                                                                           
+newDf15 = newDf14.withColumn('_1', regexp_replace('_1', 's', ''))    ;                                                                          
+newDf16 = newDf15.withColumn('_1', regexp_replace('_1', 't', ''))     ;                                                                         
+newDf17 = newDf16.withColumn('_1', regexp_replace('_1', 'v', ''))      ;                                                                        
+newDf18 = newDf17.withColumn('_1', regexp_replace('_1', 'w', ''))       ;                                                                       
+newDf19 = newDf18.withColumn('_1', regexp_replace('_1', 'x', ''))        ;                                                                      
+newDf20 = newDf19.withColumn('_1', regexp_replace('_1', 'y', ''))         ;                                                                     
+newDf21 = newDf20.withColumn('_1', regexp_replace('_1', 'z', ''))       ;                                                                    
+newDf21.createOrReplaceTempView("wordView");
+spark.sql("SELECT _1, sum(_2) FROM wordView where _1 <> '' group by _1 order by sum(_2) desc ").show();
+#
+#Assignment C
+#
+taxi = spark.read.format("csv").option("header", "true").option("inferSchema", "true").load("yellow_tripdata_2016-06.csv");
+taxi.createOrReplaceTempView("taxiView");
+spark.sql("SELECT '0.00 - 24.99', sum(fare_amount) / sum(tip_amount) as tip_percent FROM taxiView where fare_amount >0 and fare_amount <=24.99 UNION
+SELECT '25.00 - 49.99', sum(fare_amount) / sum(tip_amount) FROM taxiView where fare_amount >=25 and fare_amount >=49.99 UNION
+SELECT '50.00 - 74.99', sum(fare_amount) / sum(tip_amount) FROM taxiView where fare_amount >=50 and fare_amount >=74.99 UNION
+SELECT '75+', sum(fare_amount) / sum(tip_amount) FROM taxiView where fare_amount >=75 order by tip_percent desc").show();  
+#
+#assignment D
+#
+taxi = spark.read.format("csv").option("header", "true").option("inferSchema", "true").load("yellow_tripdata_2016-06.csv");
+taxi.createOrReplaceTempView("taxiView");
+spark.sql("
+select rankfareid
+from (select mstr.fareid as rankfareid, DENSE_RANK() OVER(ORDER BY mstr.farecount desc) as rankval 
+	  from
+		(select fare_amount as fareid, (fare_amount / trip_distance) as farecount  
+ 		from taxiView
+ 		where trip_distance > 0)mstr
+ 	  ) rankmaster
+ where rankval <= 10
+ order by 1 desc
+ ").show();
